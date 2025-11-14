@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Estoque</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 300px; }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input[type="email"], input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .error { color: red; text-align: center; margin-top: 10px; display: none; }
+        .success { color: green; text-align: center; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-form">
+        <h2>Sistema de Controle de Estoque</h2>
+        <form id="loginForm">
+            <label for="email">Email:</label>
+            <input type="email" id="email" required placeholder="exemplo@dominio.com">
+
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" required placeholder="Digite sua senha">
+
+            <button type="submit">Entrar</button>
+        </form>
+        <div id="errorMsg" class="error"></div>
+        <div id="successMsg" class="success"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();  // Impede submit padrão
+
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+
+            if (!email || !senha) {
+                showError('Email e senha são obrigatórios!');
+                return;
+            }
+
+            // Limpa mensagens anteriores
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:8081/api/auth/login', {  // Ajuste URL se porta diferente
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email, senha: senha })  // Envia como JSON
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {  // 200 OK
+                    showSuccess(`Login realizado com sucesso! Perfil: ${data.perfil}. Email: ${data.email}`);
+                    // Salva objeto completo para manter compatibilidade com basehtml.html
+                    localStorage.setItem('usuario', JSON.stringify({ nome: data.nome || data.email, funcao: data.perfil }));
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';  // Crie este arquivo se quiser
+                    }, 1000);
+                } else {  // 401, 400, etc.
+                    showError(data.error || 'Erro no login. Tente novamente.');
+                }
+            } catch (error) {
+                console.error('Erro de rede:', error);
+                showError('Erro de conexão com o servidor. Verifique se a API está rodando.');
+            }
+        });
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+        }
+
+        function showSuccess(msg) {
+            successMsg.textContent = msg;
+            successMsg.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

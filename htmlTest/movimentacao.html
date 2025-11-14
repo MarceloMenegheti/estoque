@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estoque - Sistema de Gerenciamento</title>
+    
+<style>
+* {margin: 0;padding: 0;box-sizing: border-box;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;}
+body {background-color: #f9fafb;color: #111827;}
+.app-container {display: flex; min-height: 100vh;width: 100%;}
+.sidebar {width: 240px;background-color: #ffffff;border-right: 1px solid #e5e7eb;display: flex;flex-direction: column;height: 100vh;position: fixed;left: 0;top: 0;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);z-index: 100;}
+.sidebar-header {padding: 18px 16px;border-bottom: 1px solid #e5e7eb;}
+.logo-container {display: flex;align-items: center;}
+.logo-icon {background-color: #111827;color: #ffffff;border-radius: 4px;padding: 8px;margin-right: 8px;}
+.logo-text {font-weight: 600;font-size: 18px;color: #111827;}
+.sidebar-menu {padding: 16px 0;overflow-y: auto;flex: 1;}
+.sidebar-item {display: flex;align-items: center;padding: 12px 16px;color: #4b5563;text-decoration: none;cursor: pointer;transition: background-color 0.2s;font-size: 14px;}
+.sidebar-item:hover {background-color: #f3f4f6;}
+.sidebar-item.active {border-left: 3px solid #111827;background-color: #f3f4f6;color: #111827;font-weight: 500;}
+.sidebar-item svg {margin-right: 12px;}
+.icon-fornecedor .icon-placeholder {display: inline-block;width: 16px;height: 16px;background-color: #444;margin-right: 8px;border-radius: 3px;position: relative;}
+.icon-fornecedor .icon-placeholder::before {content: '';position: absolute;width: 8px;height: 8px;background-color: white;border-radius: 50%;bottom: -3px;left: 1px;}
+.icon-fornecedor .icon-placeholder::after {content: '';position: absolute;width: 8px;height: 8px;background-color: white;border-radius: 50%;bottom: -3px;right: 1px;}
+.main-content {flex: 1;margin-left: 240px;display: flex;flex-direction: column;min-height: 100vh;}
+.header {background-color: #111827;color: #ffffff;padding: 12px 24px;display: flex;justify-content: space-between;align-items: center;height: 64px;}
+.header-left, .header-right {display: flex;align-items: center;}
+.header-right {display: flex;align-items: center;justify-content: flex-end;width: 100%;margin-right: 0;}
+.icon-button {background: none;border: none;color: #ffffff;cursor: pointer;padding: 8px;border-radius: 4px;margin-right: 0;}
+.icon-button:hover {background-color: rgba(255, 255, 255, 0.1);}
+.search-container-header {flex: 1;max-width: 400px;margin: 0 16px;}
+.search-box-header {position: relative;width: 100%;}
+.search-icon {position: absolute;left: 10px;top: 50%;transform: translateY(-50%);color: rgba(255, 255, 255, 0.5);}
+.search-input-header {background-color: rgba(255, 255, 255, 0.1);border: 1px solid rgba(255, 255, 255, 0.2);border-radius: 4px;color: #ffffff;padding: 8px 8px 8px 32px;width: 100%;outline: none;}
+.search-input-header::placeholder {color: rgba(255, 255, 255, 0.5);}
+.user-avatar {width: 32px;height: 32px;border-radius: 50%;background-color: rgba(255, 255, 255, 0.2);display: flex;align-items: center;justify-content: center;margin-left: 12px;}
+.content-area {padding: 24px;flex: 1;background-color: #f3f4f6;}
+.content-container {background-color: #ffffff;border-radius: 8px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);padding: 24px;}
+.panel-header {margin-bottom: 24px;}
+.panel-title {font-size: 20px;font-weight: 600;color: #111827;}
+.subtitle {font-size: 14px;font-weight: normal;color: #9ca3af;}
+.action-bar {background-color: #f9fafb;border-radius: 6px;padding: 12px;display: flex;flex-wrap: wrap;gap: 8px;margin-bottom: 24px;align-items: center;}
+.add-button {background-color: #10b981;color: #ffffff;border: none;border-radius: 4px;padding: 8px 12px;font-size: 14px;cursor: pointer;display: flex;align-items: center;gap: 6px;}
+.add-button svg {margin-right: 6px;}
+.action-button {padding: 10px 20px;font-size: 14px;font-weight: 500;color: #fff;background-color: #007bff;border: none;border-radius: 6px;cursor: pointer;transition: background-color 0.3s ease, transform 0.2s ease;display: inline-flex;align-items: center;gap: 6px;}
+.action-button:hover {background-color: #0056b3;transform: scale(1.03);}
+.action-button:active {transform: scale(0.97);}
+.search-field {position: relative;margin-left: auto;}
+.search-input-sm {padding: 7px 12px 7px 12px;border: 1px solid #e5e7eb;border-radius: 4px;font-size: 14px;width: 180px;}
+.table-container {overflow-x: auto;margin-bottom: 16px;border-radius: 4px;border: 1px solid #e5e7eb;}
+.stock-table {width: 100%;border-collapse: collapse;}
+.stock-table th {background-color: #111827;color: #ffffff;text-align: left;padding: 10px 16px;font-weight: 500;font-size: 14px;border: none;}
+.stock-table td {padding: 10px 16px;border-bottom: 1px solid #e5e7eb;font-size: 14px;color: #111827;}
+.stock-table tr:hover {background-color: #f9fafb;}
+.checkbox-col {width: 40px;}
+.status-cell {display: flex;justify-content: center;}
+.success-icon {color: #22c55e;}
+.warning-icon {color: #f59e0b;}
+.table-footer {display: flex;justify-content: space-between;align-items: center;padding: 12px 0;font-size: 14px;color: #6b7280;}
+.pagination {display: flex;align-items: center;gap: 8px;}
+.items-per-page {padding: 4px 8px;border: 1px solid #e5e7eb;border-radius: 4px;background-color: #ffffff;}
+.modal {display: none;position: fixed;z-index: 999;left: 0;top: 0;width: 100%;height: 100%;background-color: rgba(0,0,0,0.5);}
+.modal-content {background-color: #fff;margin: 5% auto;padding: 24px;border-radius: 8px;width: 95%;max-width: 900px;position: relative;box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);}
+.close {position: absolute;top: 15px;right: 20px;font-size: 28px;cursor: pointer;color: #6b7280;}
+close:hover {color: #111827;}
+.grid-form {display: grid;grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));gap: 16px;}
+.form-group {display: flex;flex-direction: column;}
+label {display: block;margin-bottom: 8px;font-weight: 500;color: #374151;}
+input, textarea, select {width: 100%;padding: 10px;border-radius: 4px;border: 1px solid #e5e7eb;font-size: 14px;}
+input[type="file"] {padding: 8px;}
+.preview {display: none;margin-top: 10px;max-width: 150px;max-height: 150px;border-radius: 4px;border: 1px solid #e5e7eb;object-fit: cover;}
+.grid-form button[type="submit"] {grid-column: 1 / -1;padding: 12px;background-color: #10b981;color: white;border: none;border-radius: 6px;font-size: 16px;cursor: pointer;}
+.grid-form button[type="submit"]:hover {background-color: #059669;}
+textarea {resize: none;height: 38px;line-height: 1.4;padding: 10px;}
+button[type="submit"] {background-color: #10b981;color: white;padding: 10px 16px;border: none;border-radius: 4px;font-size: 16px;cursor: pointer;margin-top: 8px;}
+button[type="submit"]:hover {background-color: #059669;}
+.image-modal {display: none;position: fixed;z-index: 1000;padding-top: 60px;left: 0;top: 0;width: 100%;height: 100%;overflow: auto;background-color: rgba(0,0,0,0.8);}
+.image-modal-content {display: block;margin: auto;max-width: 80%;max-height: 80%;border-radius: 8px;}
+.close-image-modal {position: absolute;top: 30px;right: 45px;color: #fff;font-size: 40px;font-weight: bold;cursor: pointer;}
+/* Categories Dropdown */
+.dropdown {position: relative;}
+.dropdown-toggle {width: 100%;text-align: left;background-color: #ffffff;border: 1px solid #e5e7eb;border-radius: 4px;padding: 10px;cursor: pointer;color: #374151;}
+.dropdown-menu {display: none;position: absolute;top: 45px;left: 0;width: 100%;background: #fff;border: 1px solid #e5e7eb;border-radius: 4px;z-index: 100;box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);}
+.dropdown-item {padding: 10px;cursor: pointer;border-bottom: 1px solid #f3f4f6;}
+.dropdown-item:hover {background-color: #f9fafb;}
+.table-img {width: 40px;height: 40px;object-fit: cover;border-radius: 4px;cursor: pointer;}
+.action-button.delete {background-color: #dc3545;}
+.action-button.delete:hover {background-color: #a71d2a;}
+#productTable th, #productTable td {padding: 4px 6px;font-size: 13px;}
+@media (max-width: 768px) {.sidebar {width: 64px;}.sidebar-item span {display: none;}.logo-text {display: none;}.main-content {margin-left: 64px;}.search-container-header {display: none;}.modal-content {width: 95%;margin: 10% auto;}}
+  .btn-edit { background: #17a2b8; }
+  .btn-edit:hover { background: #138496; }
+
+/* Responsive table improvements: allow wrapping, smaller padding on small screens, and horizontal scroll fallback */
+.table-container{overflow-x:auto;max-width:100%;}
+.stock-table{width:100%;border-collapse:collapse;table-layout:auto;min-width:0;}
+.stock-table th, .stock-table td{white-space:normal;word-break:break-word;padding:10px 12px}
+
+/* Reduce padding and font-size on narrow screens */
+@media (max-width: 900px){
+  .stock-table th, .stock-table td{padding:8px 10px;font-size:13px}
+  .grafico-card{min-width:280px}
+}
+
+/* On very small screens, hide less important columns (ID and Horário) to improve readability; horizontal scroll still available if needed */
+@media (max-width: 520px){
+  .stock-table th:nth-child(1), .stock-table td:nth-child(1), /* ID */
+  .stock-table th:nth-child(6), .stock-table td:nth-child(6)  /* Horário */{
+    display:none;
+  }
+  .stock-table th, .stock-table td{padding:6px 8px;font-size:12px}
+}
+
+/* Ensure table header remains visible when horizontally scrolling */
+.table-container::-webkit-scrollbar{height:8px}
+.table-container{ -webkit-overflow-scrolling: touch; }
+</style>
+</head>
+
+<body>
+  <script>
+// Verifica se o usuário está logado
+const usuario = JSON.parse(localStorage.getItem('usuario'));
+if (!usuario) {
+  window.location.href = 'telaLogin1.html';
+}
+
+function getUserInitial(name) {
+  if (!name) return 'U';
+  return name.trim()[0].toUpperCase();
+}
+
+// Preencher avatar e dropdown com nome/inicial e função (se existir no layout)
+if (document.getElementById('userInitial')) {
+  const userInitial = getUserInitial(usuario.nome);
+  document.getElementById('userInitial').textContent = userInitial;
+}
+if (document.getElementById('dropdownUserInitial')) {
+  document.getElementById('dropdownUserInitial').textContent = getUserInitial(usuario.nome);
+}
+if (document.getElementById('dropdownUserName')) {
+  document.getElementById('dropdownUserName').textContent = usuario.nome;
+  // Adiciona função abaixo do nome
+  let profileNameDiv = document.getElementById('dropdownUserName');
+  let funcaoDiv = document.createElement('div');
+  funcaoDiv.textContent = usuario.funcao;
+  funcaoDiv.style.fontSize = '13px';
+  funcaoDiv.style.color = '#6b7280';
+  funcaoDiv.style.fontWeight = '400';
+  profileNameDiv.appendChild(funcaoDiv);
+}
+</script>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <div class="logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+              <line x1="16" y1="6" x2="16" y2="6.01"></line>
+              <line x1="8" y1="6" x2="8" y2="6.01"></line>
+              <line x1="12" y1="6" x2="12" y2="6.01"></line>
+              <line x1="16" y1="10" x2="16" y2="10.01"></line>
+              <line x1="8" y1="10" x2="8" y2="10.01"></line>
+              <line x1="12" y1="10" x2="12" y2="10.01"></line>
+              <line x1="16" y1="14" x2="16" y2="14.01"></line>
+              <line x1="8" y1="14" x2="8" y2="14.01"></line>
+              <line x1="12" y1="14" x2="12" y2="14.01"></line>
+            </svg>
+          </div>
+          <span class="logo-text">Estoque</span>
+        </div>
+      </div>
+      <div class="sidebar-menu">
+        <a href="dashboard.html" class="sidebar-item">
+          <span>📊 Dashboard</span>
+        </a>
+        <a href="produtos.html" class="sidebar-item">
+          <span>📦 Produto</span>
+        </a>
+
+        <a href="fornecedores1.html" class="sidebar-item icon-fornecedor">
+          <span>🏭 Fornecedores</span>
+        </a>
+
+        <a href="usuarios.html" class="sidebar-item ">
+          <span>👷 Usuários</span>
+        </a>
+        <a href="movimentacao.html" class="sidebar-item active">
+          <span>♻️ Movimentação</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        
+        <div class="header-right">
+          <div class="profile-dropdown-container">
+            <button class="icon-button profile-dropdown-toggle" id="profileDropdownToggle" aria-haspopup="true" aria-expanded="false">
+              <div class="user-avatar" id="userAvatar">
+                <span id="userInitial">U</span>
+              </div>
+            </button>
+            <div class="profile-dropdown-menu" id="profileDropdownMenu">
+              <div class="profile-info">
+                <div class="profile-avatar"><span id="dropdownUserInitial">U</span></div>
+                <div class="profile-name" id="dropdownUserName">Usuário</div>
+              </div>
+              <button class="profile-logout" id="logoutBtn">Sair</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+<script>
+(function(){
+  const toggleBtn = document.getElementById('profileDropdownToggle');
+  const dropdownMenu = document.getElementById('profileDropdownMenu');
+  let dropdownOpen = false;
+  if(toggleBtn && dropdownMenu){
+    toggleBtn.addEventListener('click', (e)=>{ e.stopPropagation(); dropdownOpen = !dropdownOpen; dropdownMenu.style.display = dropdownOpen ? 'block' : 'none'; toggleBtn.setAttribute('aria-expanded', dropdownOpen); });
+    document.addEventListener('click', ()=>{ if(dropdownOpen){ dropdownMenu.style.display = 'none'; toggleBtn.setAttribute('aria-expanded', false); dropdownOpen = false; } });
+    dropdownMenu.addEventListener('click', (e)=> e.stopPropagation());
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(logoutBtn){ logoutBtn.addEventListener('click', ()=>{ localStorage.removeItem('usuario'); window.location.href = 'telaLogin1.html'; }); }
+
+  // Preencher avatar, nome e função (role) quando o dropdown já existe no DOM
+  try {
+    const usuario = JSON.parse(localStorage.getItem('usuario')) || { nome: 'Usuário', funcao: '' };
+    function getUserInitial(name){ if(!name) return 'U'; return name.trim()[0].toUpperCase(); }
+
+    const roleValue = usuario.funcao || usuario.perfil || usuario.role || '';
+
+    const userInitialEl = document.getElementById('userInitial');
+    if(userInitialEl) userInitialEl.textContent = getUserInitial(usuario.nome);
+
+    const dropdownUserInitial = document.getElementById('dropdownUserInitial');
+    if(dropdownUserInitial) dropdownUserInitial.textContent = getUserInitial(usuario.nome);
+
+    const dropdownUserName = document.getElementById('dropdownUserName');
+    if(dropdownUserName){
+      // Substitui o conteúdo e adiciona a função abaixo sem duplicar
+      dropdownUserName.innerHTML = '';
+      const nameSpan = document.createElement('div');
+      nameSpan.textContent = usuario.nome || 'Usuário';
+      nameSpan.style.fontWeight = '600';
+      nameSpan.style.color = '#111827';
+      dropdownUserName.appendChild(nameSpan);
+
+      if (roleValue) {
+        const funcaoDiv = document.createElement('div');
+        funcaoDiv.textContent = roleValue;
+        funcaoDiv.style.fontSize = '13px';
+        funcaoDiv.style.color = '#6b7280';
+        funcaoDiv.style.fontWeight = '400';
+        dropdownUserName.appendChild(funcaoDiv);
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao preencher perfil:', err);
+  }
+
+  if(!document.getElementById('profile-dropdown-inline-style')){
+    const style = document.createElement('style');
+    style.id = 'profile-dropdown-inline-style';
+    style.textContent = `
+    .profile-dropdown-container{position:relative;display:flex;align-items:center}
+    .profile-dropdown-toggle{background:none;border:none;padding:4px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+    .profile-dropdown-toggle:hover{background:transparent}
+    .profile-dropdown-menu{display:none;position:absolute;right:0;top:44px;background:#fff;min-width:200px;box-shadow:0 6px 18px rgba(0,0,0,0.12);border-radius:8px;z-index:200;padding:12px 0}
+    .profile-info{display:flex;align-items:center;padding:8px 16px;border-bottom:1px solid #f3f4f6}
+    .profile-avatar{width:40px;height:40px;border-radius:50%;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;margin-right:12px}
+    .profile-name{font-weight:600;color:#111827}
+    .profile-logout{width:100%;background:none;border:none;color:#dc3545;padding:10px 16px;text-align:left;cursor:pointer}
+    .user-avatar{width:32px;height:32px;border-radius:50%;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center;margin-left:12px;font-weight:600;font-size:1.1rem}
+    .profile-dropdown-toggle .user-avatar{transition:transform 0.18s ease,background 0.18s ease}
+    .profile-dropdown-toggle:hover .user-avatar{transform:scale(1.06)}
+    `;
+    document.head.appendChild(style);
+  }
+})();
+</script>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <div class="content-container">
+            <div class="panel-header">
+                <h1 class="panel-title">Movimentação<span class="subtitle">/ Listagem</span></h1>
+            </div>
+            <!-- INÍCIO DO GERENCIAMENTO DE MOVIMENTAÇÃO -->
+            <div class="container" style="max-width:900px;margin:0 auto;background:#fff;padding:0;border-radius:0;box-shadow:none;">
+                <div id="sucesso" class="sucesso"></div>
+                <div id="erro" class="erro"></div>
+                <div id="loading" class="loading">Carregando...</div>
+                <div class="erro" id="msgErroMov" style="text-align:center;padding:10px;border-radius:4px;margin:10px 0;display:none;background:#f8d7da;color:red;"></div>
+                <div>
+                    <div class="filters" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; align-items: center; background:none; box-shadow:none; border:none; padding:0;">
+                        <select id="movProdutoIdFilter" onchange="filterMovimentacoesByProdutoId()" style="padding:7px 12px; border:1px solid #e5e7eb; border-radius:4px; font-size:14px; width:180px;">
+                            <option value="">Todos Produtos</option>
+                        </select>
+                        <select id="movUsuarioIdFilter" onchange="filterMovimentacoesByUsuarioId()" style="padding:7px 12px; border:1px solid #e5e7eb; border-radius:4px; font-size:14px; width:180px;">
+                            <option value="">Todos Usuários</option>
+                        </select>
+                        <button class="action-button" onclick="listarMovimentacoes()">
+                          Atualizar Lista
+                        </button>
+                        <button class="add-button" onclick="abrirModalCadastro()">
+                          Cadastrar Movimentação
+                        </button>
+                        <button id="toggleUserViewBtn" class="action-button" style="background:#6b7280;" onclick="toggleUserView()">Ver por Usuários</button>
+                    </div>
+                    <div class="table-container" id="movTableContainer">
+                        <table id="tabelaMovimentacoes" class="stock-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Produto</th>
+                                    <th>Tipo</th>
+                                    <th>Quantidade</th>
+                                    <th>Data</th>
+                                    <th>Horário</th>
+                                    <th>Usuário</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyMovimentacoes"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Container for summarized view by unique users -->
+                    <div class="table-container" id="userViewContainer" style="display:none;">
+                      <table id="tabelaUsuariosUnicos" class="stock-table">
+                        <thead>
+                          <tr>
+                            <th>Usuário</th>
+                            <th>Total Movimentações</th>
+                            <th>Entradas</th>
+                            <th>Saídas</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbodyUsuariosUnicos"></tbody>
+                      </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal de Cadastro -->
+            <div id="modalCadastro" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1000; justify-content:center; align-items:center;">
+                <div style="background:white; padding:30px; border-radius:10px; min-width:350px; max-width:95vw; box-shadow:0 2px 10px rgba(0,0,0,0.2); position:relative;">
+                    <button onclick="fecharModalCadastro()" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
+                    <form id="formCadastroModal">
+                        <h2>Nova Movimentação</h2>
+                        <label for="produtoIdModal">Produto *</label>
+                        <select id="produtoIdModal" required>
+                            <option value="">Carregando produtos...</option>
+                        </select>
+                        <label for="tipoModal">Tipo *</label>
+                        <select id="tipoModal" required>
+                            <option value="">Selecione...</option>
+                            <option value="ENTRADA">ENTRADA (Aumenta Estoque)</option>
+                            <option value="SAIDA">SAÍDA (Diminui Estoque)</option>
+                        </select>
+                        <label for="quantidadeModal">Quantidade *</label>
+                        <input type="number" id="quantidadeModal" min="1" required>
+                        <label for="dataModal">Data *</label>
+                        <input type="date" id="dataModal" required value="">
+                        <button type="submit" class="add-button" style="margin-top:10px;">Registrar Movimentação</button>
+                    </form>
+                </div>
+            </div>
+            <!-- FIM DO GERENCIAMENTO DE MOVIMENTAÇÃO -->
+        </div>
+      </div>
+  </div>
+  <script>
+// --- INÍCIO DO GERENCIAMENTO DE MOVIMENTAÇÃO (movimentacao1.html) ---
+let produtos = [];
+let movimentacoes = [];
+// Carrega produtos no dropdown
+async function carregarProdutos() {
+    const loading = document.getElementById('loading');
+    const erro = document.getElementById('erro');
+    loading.style.display = 'block';
+    erro.style.display = 'none';
+    try {
+        const response = await fetch('http://localhost:8081/api/produtos');
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        produtos = await response.json();
+        const select = document.getElementById('produtoIdModal');
+        select.innerHTML = '<option value="">Selecione um produto</option>';
+        produtos.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = `${p.nome} (Estoque atual: ${p.quantidade})`;
+            select.appendChild(option);
+        });
+        document.getElementById('dataModal').value = new Date().toISOString().split('T')[0];
+        loading.style.display = 'none';
+    } catch (error) {
+        loading.style.display = 'none';
+        erro.textContent = `Erro ao carregar produtos: ${error.message}. Verifique o endpoint /api/produtos.`;
+        erro.style.display = 'block';
+        console.error(error);
+    }
+}
+document.getElementById('formCadastroModal').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const sucesso = document.getElementById('sucesso');
+    const erro = document.getElementById('erro');
+    const produtoId = parseInt(document.getElementById('produtoIdModal').value);
+    const tipo = document.getElementById('tipoModal').value;
+    const quantidade = parseInt(document.getElementById('quantidadeModal').value);
+    const dataInput = document.getElementById('dataModal').value;
+    const now = new Date();
+    const horas = String(now.getHours()).padStart(2, '0');
+    const minutos = String(now.getMinutes()).padStart(2, '0');
+    const segundos = String(now.getSeconds()).padStart(2, '0');
+    const dataLocalDateTime = `${dataInput}T${horas}:${minutos}:${segundos}`;
+    if (!produtoId || !tipo || quantidade < 1 || !dataInput) {
+        erro.textContent = 'Preencha todos os campos obrigatórios corretamente (quantidade > 0).';
+        erro.style.display = 'block';
+        return;
+    }
+    const usuarioId = 1;
+    const movimentacaoData = {
+        tipo: tipo,
+        quantidade: quantidade,
+        data: dataLocalDateTime,
+        produtoId: produtoId,
+        usuarioId: usuarioId
+    };
+    try {
+        const response = await fetch('http://localhost:8081/api/movimentacoes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(movimentacaoData)
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Erro HTTP: ${response.status} (ex.: Estoque insuficiente para SAÍDA)`);
+        }
+        const novaMovimentacao = await response.json();
+        sucesso.textContent = `Movimentação registrada com sucesso! ID: ${novaMovimentacao.id}. Estoque atualizado.`;
+        sucesso.style.display = 'block';
+        erro.style.display = 'none';
+        document.getElementById('formCadastroModal').reset();
+        document.getElementById('dataModal').value = new Date().toISOString().split('T')[0];
+        listarMovimentacoes();
+        carregarProdutos();
+        fecharModalCadastro();
+    } catch (error) {
+        erro.textContent = `Erro ao registrar: ${error.message}`;
+        erro.style.display = 'block';
+        sucesso.style.display = 'none';
+        console.error(error);
+    }
+});
+let _cachedMovimentacoes = [];
+
+// Override listarMovimentacoes to cache results and render normally
+async function listarMovimentacoes() {
+    const loading = document.getElementById('loading');
+    const erro = document.getElementById('erro');
+    const msgErroMov = document.getElementById('msgErroMov');
+    loading.style.display = 'block';
+    erro.style.display = 'none';
+    msgErroMov.style.display = 'none';
+    try {
+        const response = await fetch('http://localhost:8081/api/movimentacoes');
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        const movimentacoes = await response.json();
+        _cachedMovimentacoes = movimentacoes; // cache
+        renderMovimentacoesTable(movimentacoes);
+        // Preenche selects como antes
+        const produtoSelect = document.getElementById('movProdutoIdFilter');
+        produtoSelect.innerHTML = '<option value="">Todos Produtos</option>' +
+            produtos.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+        const usuarioSelect = document.getElementById('movUsuarioIdFilter');
+        let usuariosUnicos = [];
+        let usuariosMap = {};
+        movimentacoes.forEach(m => {
+            if (m.usuarioId && !usuariosUnicos.includes(m.usuarioId)) {
+                usuariosUnicos.push(m.usuarioId);
+                usuariosMap[m.usuarioId] = m.usuarioNome || m.usuarioId;
+            }
+        });
+        usuarioSelect.innerHTML = '<option value="">Todos Usuários</option>' +
+            usuariosUnicos.map(id => `<option value="${id}">${usuariosMap[id]}</option>`).join('');
+        loading.style.display = 'none';
+        msgErroMov.style.display = 'none';
+    } catch (error) {
+        loading.style.display = 'none';
+        msgErroMov.textContent = `Erro ao listar movimentações: ${error.message}. Verifique o endpoint /api/movimentacoes.`;
+        msgErroMov.style.display = 'block';
+        setTimeout(() => { msgErroMov.style.display = 'none'; }, 4000);
+        erro.style.display = 'none';
+        console.error(error);
+    }
+}
+
+function renderMovimentacoesTable(movimentacoes){
+    const tbody = document.getElementById('tbodyMovimentacoes');
+    tbody.innerHTML = '';
+    movimentacoes.forEach(m => {
+        const tr = document.createElement('tr');
+        const classeTipo = m.tipo === 'ENTRADA' ? 'tipo-entrada' : 'tipo-saida';
+        const produtoNome = m.produtoNome || (m.produto ? m.produto.nome : 'Produto Inexistente');
+        const usuarioNome = m.usuarioNome || '-';
+        const dataObj = new Date(m.data);
+        const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+        const horaFormatada = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        tr.className = classeTipo;
+        tr.innerHTML = `
+            <td>${m.id}</td>
+            <td>${produtoNome}</td>
+            <td>${m.tipo}</td>
+            <td>${m.quantidade}</td>
+            <td>${dataFormatada}</td>
+            <td>${horaFormatada}</td>
+            <td>${usuarioNome}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('tabelaMovimentacoes').style.display = 'table';
+}
+
+function renderUsuariosUnicosView(){
+    const tbody = document.getElementById('tbodyUsuariosUnicos');
+    tbody.innerHTML = '';
+    // aggregate by usuarioId or usuarioNome
+    const map = {};
+    _cachedMovimentacoes.forEach(m => {
+        const key = m.usuarioId || m.usuarioNome || 'Desconhecido';
+        const nome = m.usuarioNome || (`Usuário ${m.usuarioId}`) || 'Desconhecido';
+        if (!map[key]) map[key] = { nome: nome, total: 0, entrada: 0, saida: 0 };
+        map[key].total += 1;
+        if (m.tipo === 'ENTRADA') map[key].entrada += 1;
+        if (m.tipo === 'SAIDA') map[key].saida += 1;
+    });
+    const rows = Object.keys(map).map(k => ({ key: k, ...map[k] }));
+    // sort by total desc
+    rows.sort((a,b) => b.total - a.total);
+    rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.nome}</td><td>${r.total}</td><td>${r.entrada}</td><td>${r.saida}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+let _userViewOpen = false;
+function toggleUserView(){
+    _userViewOpen = !_userViewOpen;
+    document.getElementById('movTableContainer').style.display = _userViewOpen ? 'none' : 'block';
+    document.getElementById('userViewContainer').style.display = _userViewOpen ? 'block' : 'none';
+    const btn = document.getElementById('toggleUserViewBtn');
+    btn.textContent = _userViewOpen ? 'Voltar para Movimentações' : 'Ver por Usuários';
+    btn.style.background = _userViewOpen ? '#10b981' : '#6b7280';
+    if(_userViewOpen){
+        // Render aggregated view without refetching
+        renderUsuariosUnicosView();
+    }
+}
+
+async function listarMovimentacoes() {
+    const loading = document.getElementById('loading');
+    const erro = document.getElementById('erro');
+    const msgErroMov = document.getElementById('msgErroMov');
+    loading.style.display = 'block';
+    erro.style.display = 'none';
+    msgErroMov.style.display = 'none';
+    try {
+        const response = await fetch('http://localhost:8081/api/movimentacoes');
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        movimentacoes = await response.json();
+        const tbody = document.getElementById('tbodyMovimentacoes');
+        tbody.innerHTML = '';
+        movimentacoes.forEach(m => {
+            const tr = document.createElement('tr');
+            const classeTipo = m.tipo === 'ENTRADA' ? 'tipo-entrada' : 'tipo-saida';
+            const produtoNome = m.produtoNome || (m.produto ? m.produto.nome : 'Produto Inexistente');
+            const usuarioNome = m.usuarioNome || '-';
+            const dataObj = new Date(m.data);
+            const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+            const horaFormatada = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            tr.className = classeTipo;
+            tr.innerHTML = `
+                <td>${m.id}</td>
+                <td>${produtoNome}</td>
+                <td>${m.tipo}</td>
+                <td>${m.quantidade}</td>
+                <td>${dataFormatada}</td>
+                <td>${horaFormatada}</td>
+                <td>${usuarioNome}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        // Preenche o combobox de filtro de produtos
+        const produtoSelect = document.getElementById('movProdutoIdFilter');
+        produtoSelect.innerHTML = '<option value="">Todos Produtos</option>' +
+            produtos.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+        // Preenche o combobox de filtro de usuários
+        const usuarioSelect = document.getElementById('movUsuarioIdFilter');
+        let usuariosUnicos = [];
+        let usuariosMap = {};
+        movimentacoes.forEach(m => {
+            if (m.usuarioId && !usuariosUnicos.includes(m.usuarioId)) {
+                usuariosUnicos.push(m.usuarioId);
+                usuariosMap[m.usuarioId] = m.usuarioNome || m.usuarioId;
+            }
+        });
+        usuarioSelect.innerHTML = '<option value="">Todos Usuários</option>' +
+            usuariosUnicos.map(id => `<option value="${id}">${usuariosMap[id]}</option>`).join('');
+        loading.style.display = 'none';
+        msgErroMov.style.display = 'none';
+    } catch (error) {
+        loading.style.display = 'none';
+        msgErroMov.textContent = `Erro ao listar movimentações: ${error.message}. Verifique o endpoint /api/movimentacoes.`;
+        msgErroMov.style.display = 'block';
+        setTimeout(() => { msgErroMov.style.display = 'none'; }, 4000);
+        erro.style.display = 'none';
+        console.error(error);
+    }
+}
+function filterMovimentacoesByProdutoId() {
+    const produtoId = document.getElementById('movProdutoIdFilter').value;
+    const tbody = document.getElementById('tbodyMovimentacoes');
+    tbody.innerHTML = '';
+    if (!produtoId) return listarMovimentacoes();
+    fetch(`http://localhost:8081/api/movimentacoes/produto/${produtoId}`)
+        .then(response => response.json())
+        .then(movimentacoes => {
+            movimentacoes.forEach(m => {
+                const tr = document.createElement('tr');
+                const classeTipo = m.tipo === 'ENTRADA' ? 'tipo-entrada' : 'tipo-saida';
+                const produtoNome = m.produtoNome || (m.produto ? m.produto.nome : 'Produto Inexistente');
+                const usuarioNome = m.usuarioNome || '-';
+                const dataObj = new Date(m.data);
+                const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+                const horaFormatada = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                tr.className = classeTipo;
+                tr.innerHTML = `
+                    <td>${m.id}</td>
+                    <td>${produtoNome}</td>
+                    <td>${m.tipo}</td>
+                    <td>${m.quantidade}</td>
+                    <td>${dataFormatada}</td>
+                    <td>${horaFormatada}</td>
+                    <td>${usuarioNome}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('tabelaMovimentacoes').style.display = 'table';
+        });
+}
+function filterMovimentacoesByUsuarioId() {
+    const usuarioId = document.getElementById('movUsuarioIdFilter').value;
+    // Ensure we show the movimentacoes table when applying a user filter
+    const movTableContainer = document.getElementById('movTableContainer');
+    const userViewContainer = document.getElementById('userViewContainer');
+    const toggleBtn = document.getElementById('toggleUserViewBtn');
+    if (movTableContainer && userViewContainer && toggleBtn) {
+      movTableContainer.style.display = 'block';
+      userViewContainer.style.display = 'none';
+      toggleBtn.textContent = 'Ver por Usuários';
+      toggleBtn.style.background = '#6b7280';
+      _userViewOpen = false;
+    }
+
+    // If no selection, render full list (use cache if available)
+    if (!usuarioId) {
+        if ((_cachedMovimentacoes && _cachedMovimentacoes.length) || (typeof movimentacoes !== 'undefined' && movimentacoes.length)) {
+            const source = (_cachedMovimentacoes && _cachedMovimentacoes.length) ? _cachedMovimentacoes : movimentacoes;
+            renderMovimentacoesTable(source);
+            return;
+        }
+        return listarMovimentacoes();
+    }
+
+    // Use cached data when possible to avoid extra network call
+    const sourceList = (_cachedMovimentacoes && _cachedMovimentacoes.length) ? _cachedMovimentacoes : (typeof movimentacoes !== 'undefined' ? movimentacoes : []);
+    const filtrados = sourceList.filter(m => String(m.usuarioId) === String(usuarioId) || String(m.usuarioNome) === String(usuarioId));
+    renderMovimentacoesTable(filtrados);
+}
+function abrirModalCadastro() {
+    document.getElementById('modalCadastro').style.display = 'flex';
+    const select = document.getElementById('produtoIdModal');
+    select.innerHTML = '<option value="">Selecione um produto</option>';
+    produtos.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.textContent = `${p.nome} (Estoque atual: ${p.quantidade})`;
+        select.appendChild(option);
+    });
+    document.getElementById('dataModal').value = new Date().toISOString().split('T')[0];
+}
+function fecharModalCadastro() {
+    document.getElementById('modalCadastro').style.display = 'none';
+    document.getElementById('formCadastroModal').reset();
+}
+function toggleUserView() {
+    const movTableContainer = document.getElementById('movTableContainer');
+    const userViewContainer = document.getElementById('userViewContainer');
+    const toggleBtn = document.getElementById('toggleUserViewBtn');
+    if (movTableContainer.style.display === 'none') {
+        movTableContainer.style.display = 'block';
+        userViewContainer.style.display = 'none';
+        toggleBtn.textContent = 'Ver por Usuários';
+    } else {
+        movTableContainer.style.display = 'none';
+        userViewContainer.style.display = 'block';
+        toggleBtn.textContent = 'Ver Movimentações';
+        renderUserView();
+    }
+}
+function renderUserView() {
+    const tbody = document.getElementById('tbodyUsuariosUnicos');
+    tbody.innerHTML = '';
+    const userMap = {};
+    movimentacoes.forEach(m => {
+        if (!userMap[m.usuarioId]) {
+            userMap[m.usuarioId] = { nome: m.usuarioNome || '-', total: 0, entradas: 0, saidas: 0 };
+        }
+        userMap[m.usuarioId].total += 1;
+        if (m.tipo === 'ENTRADA') {
+            userMap[m.usuarioId].entradas += 1;
+        } else if (m.tipo === 'SAIDA') {
+            userMap[m.usuarioId].saidas += 1;
+        }
+    });
+    Object.values(userMap).forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${user.nome}</td>
+            <td>${user.total}</td>
+            <td>${user.entradas}</td>
+            <td>${user.saidas}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+carregarProdutos();
+listarMovimentacoes();
+// --- FIM DO GERENCIAMENTO DE MOVIMENTAÇÃO ---
+  </script>
+</body>
+</html>
+``` 

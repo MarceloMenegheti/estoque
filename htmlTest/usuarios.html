@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usuários - Sistema de Gerenciamento</title>
+    
+<style>
+* {margin: 0;padding: 0;box-sizing: border-box;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;}
+body {background-color: #f9fafb;color: #111827;}
+.app-container {display: flex; min-height: 100vh;width: 100%;}
+.sidebar {width: 240px;background-color: #ffffff;border-right: 1px solid #e5e7eb;display: flex;flex-direction: column;height: 100vh;position: fixed;left: 0;top: 0;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);z-index: 100;}
+.sidebar-header {padding: 18px 16px;border-bottom: 1px solid #e5e7eb;}
+.logo-container {display: flex;align-items: center;}
+.logo-icon {background-color: #111827;color: #ffffff;border-radius: 4px;padding: 8px;margin-right: 8px;}
+.logo-text {font-weight: 600;font-size: 18px;color: #111827;}
+.sidebar-menu {padding: 16px 0;overflow-y: auto;flex: 1;}
+.sidebar-item {display: flex;align-items: center;padding: 12px 16px;color: #4b5563;text-decoration: none;cursor: pointer;transition: background-color 0.2s;font-size: 14px;}
+.sidebar-item:hover {background-color: #f3f4f6;}
+.sidebar-item.active {border-left: 3px solid #111827;background-color: #f3f4f6;color: #111827;font-weight: 500;}
+.sidebar-item svg {margin-right: 12px;}
+.icon-fornecedor .icon-placeholder {display: inline-block;width: 16px;height: 16px;background-color: #444;margin-right: 8px;border-radius: 3px;position: relative;}
+.icon-fornecedor .icon-placeholder::before {content: '';position: absolute;width: 8px;height: 8px;background-color: white;border-radius: 50%;bottom: -3px;left: 1px;}
+.icon-fornecedor .icon-placeholder::after {content: '';position: absolute;width: 8px;height: 8px;background-color: white;border-radius: 50%;bottom: -3px;right: 1px;}
+.main-content {flex: 1;margin-left: 240px;display: flex;flex-direction: column;min-height: 100vh;}
+.header {background-color: #111827;color: #ffffff;padding: 12px 24px;display: flex;justify-content: space-between;align-items: center;height: 64px;}
+.header-left, .header-right {display: flex;align-items: center;}
+.header-right {display: flex;align-items: center;justify-content: flex-end;width: 100%;margin-right: 0;}
+.icon-button {background: none;border: none;color: #ffffff;cursor: pointer;padding: 8px;border-radius: 4px;margin-right: 0;}
+.icon-button:hover {background-color: rgba(255, 255, 255, 0.1);}
+.search-container-header {flex: 1;max-width: 400px;margin: 0 16px;}
+.search-box-header {position: relative;width: 100%;}
+.search-icon {position: absolute;left: 10px;top: 50%;transform: translateY(-50%);color: rgba(255, 255, 255, 0.5);}
+.search-input-header {background-color: rgba(255, 255, 255, 0.1);border: 1px solid rgba(255, 255, 255, 0.2);border-radius: 4px;color: #ffffff;padding: 8px 8px 8px 32px;width: 100%;outline: none;}
+.search-input-header::placeholder {color: rgba(255, 255, 255, 0.5);}
+.user-avatar {width: 32px;height: 32px;border-radius: 50%;background-color: rgba(255, 255, 255, 0.2);display: flex;align-items: center;justify-content: center;margin-left: 12px;}
+.content-area {padding: 24px;flex: 1;background-color: #f3f4f6;}
+.content-container {background-color: #ffffff;border-radius: 8px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);padding: 24px;}
+.panel-header {margin-bottom: 24px;}
+.panel-title {font-size: 20px;font-weight: 600;color: #111827;}
+.subtitle {font-size: 14px;font-weight: normal;color: #9ca3af;}
+.action-bar {background-color: #f9fafb;border-radius: 6px;padding: 12px;display: flex;flex-wrap: wrap;gap: 8px;margin-bottom: 24px;align-items: center;}
+.add-button {background-color: #10b981;color: #ffffff;border: none;border-radius: 4px;padding: 8px 12px;font-size: 14px;cursor: pointer;display: flex;align-items: center;}
+.add-button svg {margin-right: 6px;}
+.action-button {padding: 10px 20px;font-size: 14px;font-weight: 500;color: #fff;background-color: #007bff;border: none;border-radius: 6px;cursor: pointer;transition: background-color 0.3s ease, transform 0.2s ease;}
+.action-button:hover {background-color: #0056b3;transform: scale(1.03);}
+.action-button:active {transform: scale(0.97);}
+.search-field {position: relative;margin-left: auto;}
+.search-input-sm {padding: 7px 12px 7px 12px;border: 1px solid #e5e7eb;border-radius: 4px;font-size: 14px;width: 180px;}
+.table-container {overflow-x: auto;margin-bottom: 16px;border-radius: 4px;border: 1px solid #e5e7eb;}
+.stock-table {width: 100%;border-collapse: collapse;}
+.stock-table th {background-color: #111827;color: #ffffff;text-align: left;padding: 10px 16px;font-weight: 500;font-size: 14px;border: none;}
+.stock-table td {padding: 10px 16px;border-bottom: 1px solid #e5e7eb;font-size: 14px;color: #111827;}
+.stock-table tr:hover {background-color: #f9fafb;}
+.checkbox-col {width: 40px;}
+.status-cell {display: flex;justify-content: center;}
+.success-icon {color: #22c55e;}
+.warning-icon {color: #f59e0b;}
+.table-footer {display: flex;justify-content: space-between;align-items: center;padding: 12px 0;font-size: 14px;color: #6b7280;}
+.pagination {display: flex;align-items: center;gap: 8px;}
+.items-per-page {padding: 4px 8px;border: 1px solid #e5e7eb;border-radius: 4px;background-color: #ffffff;}
+.modal {display: none;position: fixed;z-index: 999;left: 0;top: 0;width: 100%;height: 100%;background-color: rgba(0,0,0,0.5);}
+.modal-content {background-color: #fff;margin: 5% auto;padding: 24px;border-radius: 8px;width: 95%;max-width: 900px;position: relative;box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);}
+.close {position: absolute;top: 15px;right: 20px;font-size: 28px;cursor: pointer;color: #6b7280;}
+.close:hover {color: #111827;}
+.grid-form {display: grid;grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));gap: 16px;}
+.form-group {display: flex;flex-direction: column;}
+label {display: block;margin-bottom: 8px;font-weight: 500;color: #374151;}
+input, textarea, select {width: 100%;padding: 10px;border-radius: 4px;border: 1px solid #e5e7eb;font-size: 14px;}
+input[type="file"] {padding: 8px;}
+.preview {display: none;margin-top: 10px;max-width: 150px;max-height: 150px;border-radius: 4px;border: 1px solid #e5e7eb;object-fit: cover;}
+.grid-form button[type="submit"] {grid-column: 1 / -1;padding: 12px;background-color: #10b981;color: white;border: none;border-radius: 6px;font-size: 16px;cursor: pointer;}
+.grid-form button[type="submit"]:hover {background-color: #059669;}
+textarea {resize: none;height: 38px;line-height: 1.4;padding: 10px;}
+button[type="submit"] {background-color: #10b981;color: white;padding: 10px 16px;border: none;border-radius: 4px;font-size: 16px;cursor: pointer;margin-top: 8px;}
+button[type="submit"]:hover {background-color: #059669;}
+.image-modal {display: none;position: fixed;z-index: 1000;padding-top: 60px;left: 0;top: 0;width: 100%;height: 100%;overflow: auto;background-color: rgba(0,0,0,0.8);}
+.image-modal-content {display: block;margin: auto;max-width: 80%;max-height: 80%;border-radius: 8px;}
+.close-image-modal {position: absolute;top: 30px;right: 45px;color: #fff;font-size: 40px;font-weight: bold;cursor: pointer;}
+.dropdown {position: relative;}
+.dropdown-toggle {width: 100%;text-align: left;background-color: #ffffff;border: 1px solid #e5e7eb;border-radius: 4px;padding: 10px;cursor: pointer;color: #374151;}
+.dropdown-menu {display: none;position: absolute;top: 45px;left: 0;width: 100%;background: #fff;border: 1px solid #e5e7eb;border-radius: 4px;z-index: 100;box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);}
+.dropdown-item {padding: 10px;cursor: pointer;border-bottom: 1px solid #f3f4f6;}
+.dropdown-item:hover {background-color: #f9fafb;}
+.table-img {width: 40px;height: 40px;object-fit: cover;border-radius: 4px;cursor: pointer;}
+.action-button.delete {background-color: #dc3545;}
+.action-button.delete:hover {background-color: #a71d2a;}
+.btn { background: #007bff; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 14px; }
+.btn:hover { background: #0056b3; }
+.btn-success { background: #28a745; }
+.btn-success:hover { background: #1e7e34; }
+.btn-warning { background: #ffc107; color: #000; }
+.btn-warning:hover { background: #e0a800; }
+.btn-danger { background: #dc3545; }
+.btn-danger:hover { background: #c82333; }
+.btn-edit { background: #17a2b8; }
+.btn-edit:hover { background: #138496; }
+#modalUsuario { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1000; justify-content:center; align-items:center; }
+#modalUsuario .content { background:white; padding:30px; border-radius:10px; min-width:350px; box-shadow:0 2px 10px rgba(0,0,0,0.2); position:relative; }
+#modalUsuario button.close { position:absolute; top:10px; right:10px; background:none; border:none; font-size:22px; cursor:pointer; }
+@media (max-width: 768px) {.sidebar {width: 64px;}.sidebar-item span {display: none;}.logo-text {display: none;}.main-content {margin-left: 64px;}.search-container-header {display: none;}.modal-content {width: 95%;margin: 10% auto;}}
+</style>
+</head>
+
+<body onload="listarUsuarios()">
+  <script>
+  // Verifica se o usuário está logado
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
+  if (!usuario) {
+    window.location.href = 'telaLogin1.html';
+  }
+
+  function getUserInitial(name) {
+    if (!name) return 'U';
+    return name.trim()[0].toUpperCase();
+  }
+
+  // Preencher avatar e dropdown com nome/inicial e função (se existir no layout)
+  if (document.getElementById('userInitial')) {
+    const userInitial = getUserInitial(usuario.nome);
+    document.getElementById('userInitial').textContent = userInitial;
+  }
+  if (document.getElementById('dropdownUserInitial')) {
+    document.getElementById('dropdownUserInitial').textContent = getUserInitial(usuario.nome);
+  }
+  if (document.getElementById('dropdownUserName')) {
+    document.getElementById('dropdownUserName').textContent = usuario.nome;
+    // Adiciona função abaixo do nome
+    let profileNameDiv = document.getElementById('dropdownUserName');
+    let funcaoDiv = document.createElement('div');
+    funcaoDiv.textContent = usuario.funcao;
+    funcaoDiv.style.fontSize = '13px';
+    funcaoDiv.style.color = '#6b7280';
+    funcaoDiv.style.fontWeight = '400';
+    profileNameDiv.appendChild(funcaoDiv);
+  }
+  </script>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <div class="logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+              <line x1="16" y1="6" x2="16" y2="6.01"></line>
+              <line x1="8" y1="6" x2="8" y2="6.01"></line>
+              <line x1="12" y1="6" x2="12" y2="6.01"></line>
+              <line x1="16" y1="10" x2="16" y2="10.01"></line>
+              <line x1="8" y1="10" x2="8" y2="10.01"></line>
+              <line x1="12" y1="10" x2="12" y2="10.01"></line>
+              <line x1="16" y1="14" x2="16" y2="14.01"></line>
+              <line x1="8" y1="14" x2="8" y2="14.01"></line>
+              <line x1="12" y1="14" x2="12" y2="14.01"></line>
+            </svg>
+          </div>
+          <span class="logo-text">Estoque</span>
+        </div>
+      </div>
+      <div class="sidebar-menu">
+        <a href="dashboard.html" class="sidebar-item">
+          <span>📊 Dashboard</span>
+        </a>
+        <a href="produtos.html" class="sidebar-item">
+          <span>📦 Produto</span>
+        </a>
+
+        <a href="fornecedores1.html" class="sidebar-item icon-fornecedor">
+          <span>🏭 Fornecedores</span>
+        </a>
+
+        <a href="usuarios.html" class="sidebar-item active">
+          <span>👷 Usuários</span>
+        </a>
+        <a href="movimentacao.html" class="sidebar-item">
+          <span>♻️ Movimentação</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-right">
+          <div class="profile-dropdown-container">
+            <button class="icon-button profile-dropdown-toggle" id="profileDropdownToggle" aria-haspopup="true" aria-expanded="false">
+              <div class="user-avatar" id="userAvatar">
+                <span id="userInitial">U</span>
+              </div>
+            </button>
+            <div class="profile-dropdown-menu" id="profileDropdownMenu">
+              <div class="profile-info">
+                <div class="profile-avatar"><span id="dropdownUserInitial">U</span></div>
+                <div class="profile-name" id="dropdownUserName">Usuário</div>
+              </div>
+              <button class="profile-logout" id="logoutBtn">Sair</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <div class="content-container">
+          <div class="panel-header">
+            <h1 class="panel-title">Usuários <span class="subtitle">/ Listagem</span></h1>
+          </div>
+
+          <!-- Injeção do código de gerenciamento de usuários -->
+          <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:20px;">
+            <input type="text" id="searchInput" placeholder="Buscar por nome..." onkeyup="buscarPorNome()" style="width:280px; padding:8px; border:1px solid #e5e7eb; border-radius:4px;">
+            <button class="btn" onclick="listarUsuarios()">Atualizar Lista</button>
+            <button class="btn btn-success" onclick="abrirModalUsuario()">Cadastrar Usuário</button>
+          </div>
+
+          <div class="erro" id="msgErroUsuario" style="text-align:center;padding:10px;border-radius:4px;margin:10px 0;display:none;background:#f8d7da;color:red;"></div>
+
+          <div class="table-container">
+            <table id="tabelaUsuarios" class="stock-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Nome</th><th>Email</th><th>Perfil</th><th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyUsuarios"></tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalUsuario">
+    <div class="content">
+      <button class="close" onclick="fecharModalUsuario()">&times;</button>
+      <form id="formModalUsuario" onsubmit="salvarUsuario(event)">
+        <h2 id="modalUsuarioTitle" style="text-align:center; margin-bottom:15px;">Novo Usuário</h2>
+
+        <input type="hidden" id="modalEditId">
+
+        <label>Nome *</label>
+        <input type="text" id="modalNome" required>
+
+        <label>Email *</label>
+        <input type="email" id="modalEmail" required>
+
+        <label>Senha *</label>
+        <input type="password" id="modalSenha" minlength="6" required>
+
+        <label>Perfil *</label>
+        <select id="modalPerfil" required>
+          <option value="">Selecione...</option>
+          <option value="ADMIN">ADMIN</option>
+          <option value="ESTOQUISTA">ESTOQUISTA</option>
+        </select>
+
+        <div style="text-align:center;">
+          <button type="submit" class="btn btn-success" id="modalUsuarioBtn">Cadastrar</button>
+          <button type="button" class="btn btn-danger" onclick="fecharModalUsuario()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+let usuarios = [];
+
+async function listarUsuarios() {
+  const msgErroUsuario = document.getElementById('msgErroUsuario');
+  msgErroUsuario.style.display = 'none';
+  try {
+    const res = await fetch('http://localhost:8081/api/usuarios');
+    if (!res.ok) throw new Error('Erro ao buscar usuários.');
+    usuarios = await res.json();
+    renderizarTabela(usuarios);
+  } catch (e) {
+    msgErroUsuario.textContent = `Erro ao listar usuários: ${e.message}. Verifique o endpoint /api/usuarios.`;
+    msgErroUsuario.style.display = 'block';
+    setTimeout(() => { msgErroUsuario.style.display = 'none'; }, 4000);
+    console.error(e);
+  }
+}
+
+function renderizarTabela(lista) {
+  const tbody = document.getElementById('tbodyUsuarios');
+  tbody.innerHTML = '';
+  lista.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${u.id}</td>
+      <td>${u.nome}</td>
+      <td>${u.email}</td>
+      <td>${u.perfil}</td>
+      <td>
+        <button class="btn btn-edit" onclick="editarUsuario(${u.id})">Editar</button>
+        <button class="btn btn-danger" onclick="deletarUsuario(${u.id})">Excluir</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function abrirModalUsuario() {
+  document.getElementById('modalUsuarioTitle').textContent = 'Novo Usuário';
+  document.getElementById('modalUsuarioBtn').textContent = 'Cadastrar';
+  document.getElementById('formModalUsuario').reset();
+  document.getElementById('modalEditId').value = '';
+  document.getElementById('modalUsuario').style.display = 'flex';
+}
+
+function fecharModalUsuario() {
+  document.getElementById('modalUsuario').style.display = 'none';
+}
+
+async function salvarUsuario(e) {
+  e.preventDefault();
+  const id = document.getElementById('modalEditId').value;
+  const usuario = {
+    nome: document.getElementById('modalNome').value,
+    email: document.getElementById('modalEmail').value,
+    senha: document.getElementById('modalSenha').value,
+    perfil: document.getElementById('modalPerfil').value
+  };
+
+  try {
+    let res;
+    if (id) {
+      res = await fetch(`http://localhost:8081/api/usuarios/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(usuario)
+      });
+    } else {
+      res = await fetch('http://localhost:8081/api/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(usuario)
+      });
+    }
+
+    if (!res.ok) throw new Error('Erro ao salvar usuário.');
+    fecharModalUsuario();
+    listarUsuarios();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function editarUsuario(id) {
+  const user = usuarios.find(u => u.id === id);
+  if (!user) return;
+  document.getElementById('modalUsuarioTitle').textContent = 'Editar Usuário';
+  document.getElementById('modalUsuarioBtn').textContent = 'Salvar Alterações';
+  document.getElementById('modalEditId').value = user.id;
+  document.getElementById('modalNome').value = user.nome;
+  document.getElementById('modalEmail').value = user.email;
+  document.getElementById('modalSenha').value = '';
+  document.getElementById('modalPerfil').value = user.perfil;
+  document.getElementById('modalUsuario').style.display = 'flex';
+}
+
+async function deletarUsuario(id) {
+  if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+  try {
+    const res = await fetch(`http://localhost:8081/api/usuarios/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao excluir usuário.');
+    listarUsuarios();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function buscarPorNome() {
+  const filtro = document.getElementById('searchInput').value.toLowerCase();
+  const filtrados = usuarios.filter(u => u.nome.toLowerCase().includes(filtro));
+  renderizarTabela(filtrados);
+}
+
+// Perfil do usuário (avatar + dropdown) — preenche com informações de localStorage e controla abrir/fechar/logout
+(function(){
+  const usuario = JSON.parse(localStorage.getItem('usuario')) || { nome: 'Usuário', funcao: '' };
+
+  function getUserInitial(name){ if(!name) return 'U'; return name.trim()[0].toUpperCase(); }
+
+  const userInitial = getUserInitial(usuario.nome);
+  if(document.getElementById('userInitial')) document.getElementById('userInitial').textContent = userInitial;
+  if(document.getElementById('dropdownUserInitial')) document.getElementById('dropdownUserInitial').textContent = userInitial;
+  if(document.getElementById('dropdownUserName')){
+    const nameEl = document.getElementById('dropdownUserName');
+    nameEl.textContent = usuario.nome || 'Usuário';
+    if(usuario.funcao){
+      const funcaoDiv = document.createElement('div');
+      funcaoDiv.textContent = usuario.funcao;
+      funcaoDiv.style.fontSize = '13px';
+      funcaoDiv.style.color = '#6b7280';
+      funcaoDiv.style.fontWeight = '400';
+      nameEl.appendChild(funcaoDiv);
+    }
+  }
+
+  const toggleBtn = document.getElementById('profileDropdownToggle');
+  const dropdownMenu = document.getElementById('profileDropdownMenu');
+  let dropdownOpen = false;
+  if(toggleBtn && dropdownMenu){
+    toggleBtn.addEventListener('click', (e)=>{ e.stopPropagation(); dropdownOpen = !dropdownOpen; dropdownMenu.style.display = dropdownOpen ? 'block' : 'none'; toggleBtn.setAttribute('aria-expanded', dropdownOpen); });
+    document.addEventListener('click', ()=>{ if(dropdownOpen){ dropdownMenu.style.display = 'none'; toggleBtn.setAttribute('aria-expanded', false); dropdownOpen = false; } });
+    dropdownMenu.addEventListener('click', (e)=> e.stopPropagation());
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(logoutBtn){ logoutBtn.addEventListener('click', ()=>{ localStorage.removeItem('usuario'); window.location.href = 'telaLogin.html'; }); }
+})();
+
+if(!document.getElementById('profile-dropdown-inline-style')){
+  const style = document.createElement('style');
+  style.id = 'profile-dropdown-inline-style';
+  style.textContent = `
+  .profile-dropdown-container{position:relative;display:flex;align-items:center}
+  .profile-dropdown-toggle{background:none;border:none;padding:4px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+  .profile-dropdown-toggle:hover{background:transparent}
+  .profile-dropdown-menu{display:none;position:absolute;right:0;top:44px;background:#fff;min-width:200px;box-shadow:0 6px 18px rgba(0,0,0,0.12);border-radius:8px;z-index:200;padding:12px 0}
+  .profile-info{display:flex;align-items:center;padding:8px 16px;border-bottom:1px solid #f3f4f6}
+  .profile-avatar{width:40px;height:40px;border-radius:50%;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;margin-right:12px}
+  .profile-name{font-weight:600;color:#111827}
+  .profile-logout{width:100%;background:none;border:none;color:#dc3545;padding:10px 16px;text-align:left;cursor:pointer}
+  .user-avatar{width:32px;height:32px;border-radius:50%;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center;margin-left:12px;font-weight:600;font-size:1.1rem}
+  .profile-dropdown-toggle .user-avatar{transition:transform 0.18s ease,background 0.18s ease}
+  .profile-dropdown-toggle:hover .user-avatar{transform:scale(1.06)}
+  `;
+  document.head.appendChild(style);
+}
+  </script>
+</body>
+</html>

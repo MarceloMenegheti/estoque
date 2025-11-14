@@ -1,0 +1,84 @@
+/* components/tabela-base.css */
+
+.tabela-container {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+}
+
+.tabela-base {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+.tabela-base thead {
+  background-color: #f3f3f3;
+}
+
+.tabela-base th {
+  text-align: left;
+  padding: 12px;
+  font-weight: 600;
+  color: #444;
+  border-bottom: 2px solid #ddd;
+}
+
+.tabela-base td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.tabela-base tbody tr:hover {
+  background-color: #f9f9f9;
+  transition: background-color 0.2s;
+}
+
+/* Botões */
+.tabela-base button {
+  padding: 5px 10px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+button.editar {
+  background-color: #0078d7;
+  color: white;
+}
+
+button.editar:hover {
+  background-color: #005fa3;
+}
+
+button.excluir {
+  background-color: #e53935;
+  color: white;
+}
+
+button.excluir:hover {
+  background-color: #c62828;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .tabela-base th, .tabela-base td {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .tabela-base button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
